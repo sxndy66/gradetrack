@@ -1,0 +1,14 @@
+name = "gradetrack-ocr"
+type = "javascript"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+
+[env.production]
+name = "gradetrack-ocr-prod"
+workers_dev = true
+
+[[env.production.routes]]
+pattern = "gradetrack-ocr.YOUR-USERNAME.workers.dev/*"
+zone_name = "example.com"
