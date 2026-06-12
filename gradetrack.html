@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GradeTrack — Academic Performance Tracker</title>
+<style>
+  :root{
+    --ink:#1b2a2f;
+    --paper:#f6f3ec;
+    --line:#d8d2c4;
+    --accent:#b5542c;
+    --accent2:#2f6f5e;
+    --card:#ffffff;
+    --muted:#7b756a;
+    --good:#2f6f5e;
+    --warn:#b5542c;
+    --shadow:0 2px 10px rgba(27,42,47,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Georgia', 'Times New Roman', serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'Courier New', monospace;}
+  header{
+    border-bottom:2px solid var(--ink);
+    padding:18px 24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  header .brand{
+    font-size:1.6rem;
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+  header .brand span{color:var(--accent);}
+  header .tag{
+    font-family:'Courier New', monospace;
+    font-size:0.78rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+  }
+  #user-bar{
+    font-family:'Courier New', monospace;
+    font-size:0.85rem;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  #user-bar button{
+    font-family:'Courier New', monospace;
+    background:none;
+    border:1px solid var(--ink);
+    padding:4px 10px;
+    cursor:pointer;
+    border-radius:2px;
+    font-size:0.78rem;
+  }
+  #user-bar button:hover{background:var(--ink);color:var(--paper);}
+
+  main{max-width:1000px;margin:0 auto;padding:24px;}
+
+  /* Auth screen */
+  .auth-wrap{
+    max-width:420px;
+    margin:60px auto;
+    background:var(--card);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow);
+    padding:32px;
+    border-radius:4px;
+  }
+  .auth-wrap h2{margin-top:0;font-size:1.4rem;}
+  .auth-wrap p.sub{color:var(--muted);font-size:0.9rem;margin-top:-8px;}
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-family:'Courier New', monospace;
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    font-family:'Georgia',serif;
+    font-size:1rem;
+    background:#fff;
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--accent2);outline-offset:1px;}
+  .btn{
+    display:inline-block;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:11px 22px;
+    font-family:'Courier New', monospace;
+    font-size:0.85rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    cursor:pointer;
+    border-radius:2px;
+    transition:background 0.15s;
+  }
+  .btn:hover{background:var(--accent);}
+  .btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink);}
+  .btn.secondary:hover{background:var(--ink);color:var(--paper);}
+  .btn.full{width:100%;}
+  .btn.small{padding:6px 12px;font-size:0.72rem;}
+  .auth-toggle{
+    text-align:center;
+    margin-top:14px;
+    font-size:0.85rem;
+    color:var(--muted);
+  }
+  .auth-toggle a{color:var(--accent2);cursor:pointer;text-decoration:underline;}
+  .error-msg{
+    background:#fbeae3;
+    border:1px solid var(--accent);
+    color:var(--accent);
+    padding:8px 12px;
+    border-radius:2px;
+    font-size:0.85rem;
+    margin-bottom:14px;
+  }
+
+  /* App layout */
+  .hidden{display:none !important;}
+  .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;}
+  @media (max-width:760px){.grid-2{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:var(--shadow);
+    padding:22px;
+    margin-bottom:20px;
+  }
+  .card h3{
+    margin-top:0;
+    font-size:1.1rem;
+    border-bottom:1px solid var(--line);
+    padding-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:'Courier New', monospace;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    color:var(--accent2);
+    margin-bottom:4px;
+  }
+
+  /* CGPA hero */
+  .cgpa-hero{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  .cgpa-number{
+    font-size:3.6rem;
+    font-weight:700;
+    line-height:1;
+    font-family:'Courier New', monospace;
+    color:var(--accent2);
+  }
+  .cgpa-meta{font-size:0.9rem;color:var(--muted);line-height:1.6;}
+
+  table{width:100%;border-collapse:collapse;font-size:0.92rem;}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;}
+  th{font-family:'Courier New', monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+  td.num, th.num{text-align:center;}
+  select.grade-select{
+    padding:5px;border:1px solid var(--line);border-radius:2px;font-family:'Georgia',serif;background:#fff;
+  }
+  input.marks-input{
+    width:64px;padding:5px;border:1px solid var(--line);border-radius:2px;font-family:'Georgia',serif;text-align:center;
+  }
+  .gpa-pill{
+    display:inline-block;
+    font-family:'Courier New', monospace;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:12px;
+    background:#eaf3f0;
+    color:var(--accent2);
+    font-size:0.85rem;
+  }
+
+  .sem-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .sem-tab{
+    font-family:'Courier New', monospace;
+    font-size:0.78rem;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    cursor:pointer;
+    background:#fff;
+  }
+  .sem-tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+  .resource-list{display:flex;flex-direction:column;gap:10px;}
+  .resource-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fdfcf9;
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .resource-item:hover{border-color:var(--accent2);}
+  .resource-item .r-name{font-weight:600;}
+  .resource-item .r-desc{font-size:0.78rem;color:var(--muted);font-family:'Courier New', monospace;}
+  .resource-item .r-go{font-family:'Courier New', monospace;font-size:0.78rem;color:var(--accent2);}
+
+  .summary-row{display:flex;justify-content:space-between;font-size:0.9rem;padding:6px 0;border-bottom:1px solid var(--line);}
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .lab{color:var(--muted);}
+
+  .add-custom-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-top:10px;align-items:end;}
+  @media (max-width:600px){.add-custom-form{grid-template-columns:1fr 1fr;}}
+  .add-custom-form .field{margin-bottom:0;}
+
+  .note{font-size:0.8rem;color:var(--muted);margin-top:10px;line-height:1.5;}
+
+  /* Marksheet upload */
+  .upload-zone{
+    border:2px dashed var(--line);
+    border-radius:4px;
+    padding:28px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color 0.15s, background 0.15s;
+    background:#fdfcf9;
+  }
+  .upload-zone:hover, .upload-zone.dragover{border-color:var(--accent2);background:#f3f7f5;}
+  .upload-zone input{display:none;}
+  .upload-zone .upload-icon{font-size:2rem;margin-bottom:6px;}
+  .upload-zone .upload-text{font-weight:600;}
+  .upload-zone .upload-sub{font-size:0.8rem;color:var(--muted);font-family:'Courier New', monospace;margin-top:4px;}
+
+  .ocr-progress{
+    margin-top:14px;
+    display:none;
+  }
+  .ocr-progress.active{display:block;}
+  .progress-bar{
+    width:100%;
+    height:8px;
+    background:var(--line);
+    border-radius:4px;
+    overflow:hidden;
+    margin-top:8px;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent2);
+    width:0%;
+    transition:width 0.2s;
+  }
+  .progress-label{
+    font-family:'Courier New', monospace;
+    font-size:0.78rem;
+    color:var(--muted);
+  }
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    background:rgba(27,42,47,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    padding:16px;
+  }
+  .modal-box{
+    background:var(--card);
+    border-radius:6px;
+    max-width:680px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:24px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.25);
+  }
+  .modal-box h3{margin-top:0;border-bottom:1px solid var(--line);padding-bottom:10px;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+  .review-table input, .review-table select{width:100%;padding:5px;font-family:'Georgia',serif;border:1px solid var(--line);border-radius:2px;}
+  .review-table th, .review-table td{padding:6px 4px;}
+  .ocr-raw-toggle{font-family:'Courier New', monospace;font-size:0.78rem;color:var(--accent2);cursor:pointer;text-decoration:underline;margin-top:10px;display:inline-block;}
+  .ocr-raw-text{
+    font-family:'Courier New', monospace;
+    font-size:0.75rem;
+    background:#f6f3ec;
+    border:1px solid var(--line);
+    padding:10px;
+    border-radius:3px;
+    white-space:pre-wrap;
+    max-height:160px;
+    overflow-y:auto;
+    margin-top:8px;
+    display:none;
+  }
+  .footer-note{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.78rem;
+    font-family:'Courier New', monospace;
+    padding:24px 0;
+  }
+
+  /* Performance dashboard */
+  .perf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+  @media (max-width:680px){.perf-grid{grid-template-columns:repeat(2,1fr);}}
+  .perf-stat{
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:14px;
+    background:#fdfcf9;
+    text-align:center;
+  }
+  .perf-stat .stat-num{font-family:'Courier New', monospace;font-size:1.6rem;font-weight:700;color:var(--accent2);}
+  .perf-stat.warn .stat-num{color:var(--accent);}
+  .perf-stat .stat-lab{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:'Courier New', monospace;margin-top:2px;}
+
+  .badge{
+    display:inline-block;
+    font-family:'Courier New', monospace;
+    font-size:0.7rem;
+    padding:2px 8px;
+    border-radius:10px;
+    font-weight:700;
+  }
+  .badge.pass{background:#eaf3f0;color:var(--accent2);}
+  .badge.arrear{background:#fbeae3;color:var(--accent);}
+
+  .arrear-list{display:flex;flex-direction:column;gap:8px;}
+  .arrear-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 12px;
+    border:1px solid var(--accent);
+    border-radius:3px;
+    background:#fbeae3;
+    font-size:0.88rem;
+  }
+  .arrear-item .a-sub{font-weight:600;}
+  .arrear-item .a-code{font-family:'Courier New', monospace;font-size:0.78rem;color:var(--muted);}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand">Grade<span>Track</span></div>
+    <div class="tag">Personal Academic Performance Tracker</div>
+  </div>
+  <div id="user-bar" class="hidden">
+    <span id="welcome-msg"></span>
+    <button onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen">
+    <div class="auth-wrap">
+      <div id="login-error" class="error-msg hidden"></div>
+
+      <!-- Login form -->
+      <div id="login-form">
+        <h2>Log in</h2>
+        <p class="sub">Access your saved marks &amp; CGPA</p>
+        <div class="field">
+          <label for="login-username">Username</label>
+          <input id="login-username" type="text" placeholder="e.g. arun_cse">
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" placeholder="••••••••">
+        </div>
+        <button class="btn full" onclick="handleLogin()">Log in</button>
+        <div class="auth-toggle">No account yet? <a onclick="showSignup()">Sign up</a></div>
+      </div>
+
+      <!-- Signup form -->
+      <div id="signup-form" class="hidden">
+        <h2>Create your account</h2>
+        <p class="sub">Stored only on this device</p>
+        <div class="field">
+          <label for="signup-name">Full name</label>
+          <input id="signup-name" type="text" placeholder="Your name">
+        </div>
+        <div class="field">
+          <label for="signup-username">Choose a username</label>
+          <input id="signup-username" type="text" placeholder="e.g. arun_cse">
+        </div>
+        <div class="field">
+          <label for="signup-password">Choose a password</label>
+          <input id="signup-password" type="password" placeholder="••••••••">
+        </div>
+        <button class="btn full" onclick="handleSignup()">Create account</button>
+        <div class="auth-toggle">Already have an account? <a onclick="showLogin()">Log in</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP SCREEN -->
+  <div id="app-screen" class="hidden">
+
+    <!-- Degree selector -->
+    <div class="card">
+      <h3>Degree &amp; Branch</h3>
+      <div class="grid-2" style="gap:14px;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="degree-select">Degree</label>
+          <select id="degree-select" onchange="onDegreeChange()">
+            <option value="">-- Select degree --</option>
+            <option value="BE">B.E. (Engineering)</option>
+            <option value="BTECH">B.Tech (Technology)</option>
+            <option value="BSC">B.Sc. (Arts &amp; Science)</option>
+            <option value="BA">B.A.</option>
+            <option value="BCOM">B.Com.</option>
+            <option value="BCA">BCA</option>
+            <option value="CUSTOM">Custom / Other</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="branch-select">Branch / Specialization</label>
+          <select id="branch-select" onchange="onBranchChange()">
+            <option value="">-- Select branch --</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px;margin-bottom:0;max-width:260px;">
+        <label for="regulation-select">Regulation</label>
+        <select id="regulation-select" onchange="onRegulationChange()">
+          <option value="R2021">Regulation 2021 (current)</option>
+          <option value="CUSTOM">Other / Upcoming Regulation (custom)</option>
+        </select>
+      </div>
+      <p class="note" id="degree-note"></p>
+    </div>
+
+    <!-- Semester marks -->
+    <div class="card" id="marks-card" style="display:none;">
+      <h3>Semester Marks &amp; Grades</h3>
+      <div class="sem-tabs" id="sem-tabs"></div>
+      <table id="subjects-table">
+        <thead>
+          <tr>
+            <th>Subject Code</th>
+            <th>Subject Name</th>
+            <th class="num">Credits</th>
+            <th class="num">Marks (/100)</th>
+            <th class="num">Grade</th>
+            <th class="num">GPA Pts</th>
+            <th class="num"></th>
+          </tr>
+        </thead>
+        <tbody id="subjects-tbody"></tbody>
+      </table>
+
+      <div class="add-custom-form">
+        <div class="field">
+          <label>Add Subject Name</label>
+          <input type="text" id="custom-subname" placeholder="e.g. Open Elective">
+        </div>
+        <div class="field">
+          <label>Code</label>
+          <input type="text" id="custom-subcode" placeholder="e.g. OE001">
+        </div>
+        <div class="field">
+          <label>Credits</label>
+          <input type="number" id="custom-credits" min="1" max="6" placeholder="3">
+        </div>
+        <button class="btn small" onclick="addCustomSubject()">Add</button>
+      </div>
+
+      <div class="summary-row" style="margin-top:14px;">
+        <span class="lab">Semester GPA</span>
+        <span class="gpa-pill" id="sem-gpa">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="lab">Semester credits earned</span>
+        <span id="sem-credits">—</span>
+      </div>
+    </div>
+
+    <!-- Marksheet Upload -->
+    <div class="card">
+      <h3>Upload Marksheet (Auto-scan)</h3>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('marksheet-file').click()">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Click or drop a marksheet image here</div>
+        <div class="upload-sub">JPG / PNG · scanned in your browser, never uploaded anywhere</div>
+        <input type="file" id="marksheet-file" accept="image/*" onchange="handleMarksheetFile(this.files[0])">
+      </div>
+      <div class="ocr-progress" id="ocr-progress">
+        <div class="progress-label" id="ocr-status">Starting…</div>
+        <div class="progress-bar"><div class="progress-fill" id="ocr-fill"></div></div>
+      </div>
+      <p class="note">Works best with clear, well-lit photos of printed result sheets (Anna University format: subject code, subject name, grade). Local OCR — accuracy varies; always review before saving.</p>
+    </div>
+
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Overall CGPA</h3>
+        <div class="cgpa-hero">
+          <div class="cgpa-number" id="cgpa-display">0.00</div>
+          <div class="cgpa-meta">
+            <div id="cgpa-credits">Total credits: 0</div>
+            <div id="cgpa-sems">Semesters recorded: 0</div>
+          </div>
+        </div>
+        <table style="margin-top:16px;">
+          <thead><tr><th>Semester</th><th class="num">GPA</th><th class="num">Credits</th></tr></thead>
+          <tbody id="cgpa-tbody"></tbody>
+        </table>
+        <div class="field" style="margin-top:14px;">
+          <label for="manual-cgpa">Or enter your official CGPA manually</label>
+          <input type="number" id="manual-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.42" onchange="saveManualCgpa()">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Study Resources &amp; Notices</h3>
+        <div class="resource-list" id="resource-list"></div>
+        <p class="note">These open the official / community sites in a new tab. GradeTrack does not log in on your behalf — sign in there directly with your own credentials.</p>
+      </div>
+    </div>
+
+    <!-- Performance & Arrears -->
+    <div class="card">
+      <h3>Performance Overview</h3>
+      <div class="perf-grid" id="perf-grid"></div>
+
+      <table>
+        <thead>
+          <tr><th>Semester</th><th class="num">Subjects</th><th class="num">GPA</th><th class="num">Credits Earned</th><th class="num">Status</th></tr>
+        </thead>
+        <tbody id="perf-sem-tbody"></tbody>
+      </table>
+
+      <h3 style="margin-top:20px;border-bottom:1px solid var(--line);padding-bottom:10px;">Arrears (RA / W subjects)</h3>
+      <div class="arrear-list" id="arrear-list"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- OCR Review Modal -->
+<div class="modal-overlay hidden" id="ocr-modal">
+  <div class="modal-box">
+    <h3>Review scanned marksheet</h3>
+    <p class="note">OCR can misread characters. Check each row, fix codes/grades/marks, untick anything wrong, then save. Saving will apply these to <strong id="ocr-target-sem-label">the selected semester</strong>.</p>
+    <div class="field" style="max-width:220px;">
+      <label for="ocr-sem-select">Apply to semester</label>
+      <select id="ocr-sem-select" onchange="renderOcrReviewTable()">
+        <option value="1">Semester 1</option>
+        <option value="2">Semester 2</option>
+        <option value="3">Semester 3</option>
+        <option value="4">Semester 4</option>
+        <option value="5">Semester 5</option>
+        <option value="6">Semester 6</option>
+        <option value="7">Semester 7</option>
+        <option value="8">Semester 8</option>
+      </select>
+    </div>
+    <table class="review-table" style="margin-top:12px;">
+      <thead>
+        <tr><th></th><th>Subject Code</th><th>Subject Name</th><th class="num">Credits</th><th class="num">Grade</th></tr>
+      </thead>
+      <tbody id="ocr-review-tbody"></tbody>
+    </table>
+    <span class="ocr-raw-toggle" onclick="toggleRawText()">Show raw OCR text</span>
+    <div class="ocr-raw-text" id="ocr-raw-text"></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeOcrModal()">Cancel</button>
+      <button class="btn" onclick="applyOcrResults()">Save selected rows</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="footer-note">GradeTrack · data stored locally in your browser · not affiliated with Anna University</div>
+
+<script>
+/* ============ DATA: GRADE POINTS (Anna University 10-point scale) ============ */
+const GRADE_POINTS = {
+  "O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "RA": 0, "W": 0
+};
+const GRADE_OPTIONS = ["O","A+","A","B+","B","C","RA","W"];
+
+/* ============ DATA: PRE-LOADED BRANCH CURRICULA (Anna University R2021 representative) ============ */
+/* Each subject: code, name, credits. Semesters 1-8 */
+const CURRICULA = {
+  CSE: {
+    label: "Computer Science & Engineering",
+    semesters: {
+      1: [["HS3151","Professional English – I",3],["MA3151","Matrices & Calculus",4],["PH3151","Engineering Physics",3],["CY3151","Engineering Chemistry",3],["GE3151","Problem Solving & Python Programming",3],["GE3152","Tamils & Technology",1],["GE3171","Problem Solving & Python Lab",2],["BS3171","Physics & Chemistry Lab",2]],
+      2: [["HS3251","Professional English – II",2],["MA3251","Statistics & Numerical Methods",4],["PH3256","Physics for Information Science",3],["BE3251","Basic Electrical & Electronics Engg.",3],["GE3251","Engineering Graphics",4],["CS3251","Programming in C",3],["GE3271","Engg. Practices Lab",2],["CS3271","Programming in C Lab",2]],
+      3: [["MA3354","Discrete Mathematics",4],["CS3351","Digital Principles & Computer Organization",4],["CS3352","Foundations of Data Science",3],["CS3301","Data Structures",3],["CS3391","OOP",3],["GE3361","Professional Development",1],["CS3311","Data Structures Lab",2],["CS3381","OOP Lab",2],["GE3371","Environmental Sciences",2]],
+      4: [["CS3452","Theory of Computation",4],["CS3491","AI & Machine Learning",4],["CS3492","Database Management Systems",4],["CS3401","Algorithms",3],["CB3491","Operating Systems",4],["GE3451","Engg. Economics & Financial Accounting",3],["CS3411","AI & ML Lab",2],["CS3481","DBMS Lab",2]],
+      5: [["CS3551","Distributed Computing",3],["CS3501","Compiler Design",3],["CS3591","Computer Networks",4],["CCS340","Software Engineering",3],["CCS366","Cloud Computing",3],["GE3791","Human Values & Ethics",1],["CS3511","Networks Lab",2],["CS3581","Mini Project / Software Dev",4]],
+      6: [["CCS356","Object Oriented Software Engg.",3],["CCS354","Network Security",3],["CCS336","Cloud Application Development",3],["CS3691","Embedded Systems & IoT",4],["GE3651","Professional Development",2],["CS3681","Embedded Systems Lab",2],["CS3661","Mini Project",2]],
+      7: [["MX3084","Innovation & Entrepreneurship",3],["IT3081","Project Management",3],["CCS372","Cryptography & Network Security",3],["CS3711","Summer Internship",2],["CCS373","Software Testing",3],["CCS357","Cyber Forensics",3]],
+      8: [["CS3811","Project Work / Internship",10]]
+    }
+  },
+  ECE: {
+    label: "Electronics & Communication Engineering",
+    semesters: {
+      1: [["HS3151","Professional English – I",3],["MA3151","Matrices & Calculus",4],["PH3151","Engineering Physics",3],["CY3151","Engineering Chemistry",3],["GE3151","Problem Solving & Python Programming",3],["GE3152","Tamils & Technology",1],["GE3171","Problem Solving & Python Lab",2],["BS3171","Physics & Chemistry Lab",2]],
+      2: [["HS3251","Professional English – II",2],["MA3255","Transforms & Partial Diff. Equations",4],["PH3254","Semiconductor Physics",3],["GE3251","Engineering Graphics",4],["EC3251","Circuit Analysis",3],["EC3252","Electronic Devices",3],["GE3271","Engg. Practices Lab",2],["EC3271","Electronic Devices Lab",2]],
+      3: [["MA3355","Random Processes & LTI Systems",4],["EC3354","Signals & Systems",3],["EC3353","Electronic Circuits I",3],["EC3351","Control Systems",3],["EC3352","Digital Electronics",3],["GE3361","Professional Development",1],["EC3361","Electronic Circuits I Lab",2],["EC3371","Digital Systems Lab",2],["GE3371","Environmental Sciences",2]],
+      4: [["EC3452","Communication Systems",4],["EC3401","Networks & Security",3],["EC3492","Digital Signal Processing",4],["EC3451","Linear Integrated Circuits",3],["EC3491","Embedded Systems & Design",4],["GE3451","Engg. Economics & Financial Accounting",3],["EC3461","LIC Lab",2],["EC3481","DSP Lab",2]],
+      5: [["EC3552","VLSI Design",4],["EC3501","Wireless Communication",3],["EC3591","Microprocessors & Microcontrollers",4],["GE3551","Comm. Engineering Lab",2],["EC3591E","Open Elective – I",3],["GE3791","Human Values & Ethics",1],["EC3561","Microprocessors Lab",2],["EC3571","VLSI Lab",2]],
+      6: [["EC3691","Embedded & IoT Lab Project",4],["EC3651","Antenna & Microwave Engg.",3],["EC3661","Optical & Satellite Communication",3],["GE3651","Professional Development",2],["EC3681","RF Lab",2],["EC3661E","Open Elective – II",3],["EC3691E","Professional Elective – I",3]],
+      7: [["EC3791E","Professional Elective – II",3],["EC3792E","Professional Elective – III",3],["MX3084","Innovation & Entrepreneurship",3],["EC3711","Summer Internship",2],["EC3791","Project Phase – I",2],["EC3793E","Open Elective – III",3]],
+      8: [["EC3811","Project Work / Internship",10]]
+    }
+  },
+  MECH: {
+    label: "Mechanical Engineering",
+    semesters: {
+      1: [["HS3151","Professional English – I",3],["MA3151","Matrices & Calculus",4],["PH3151","Engineering Physics",3],["CY3151","Engineering Chemistry",3],["GE3151","Problem Solving & Python Programming",3],["GE3152","Tamils & Technology",1],["GE3171","Problem Solving & Python Lab",2],["BS3171","Physics & Chemistry Lab",2]],
+      2: [["HS3251","Professional English – II",2],["MA3251","Statistics & Numerical Methods",4],["PH3201","Materials Science",3],["GE3251","Engineering Graphics",4],["GE3252","Basic Civil & Mechanical Engg.",3],["BE3251","Basic Electrical & Electronics Engg.",3],["GE3271","Engg. Practices Lab",2],["BE3271","Electrical Lab",2]],
+      3: [["MA3351","Transforms & PDE",4],["ME3351","Engineering Mechanics",3],["ME3392","Engineering Thermodynamics",3],["ME3393","Manufacturing Processes",3],["ME3391","Fluid Mechanics & Machinery",3],["GE3361","Professional Development",1],["ME3311","Manufacturing Tech. Lab I",2],["ME3381","Computer Aided Machine Drawing",2],["GE3371","Environmental Sciences",2]],
+      4: [["ME3491","Theory of Machines",4],["ME3492","Engineering Materials & Metallurgy",3],["ME3493","Thermal Engineering",3],["ME3494","Hydraulics & Pneumatics",3],["ME3451","Manufacturing Technology II",3],["GE3451","Engg. Economics & Financial Accounting",3],["ME3461","Thermal Engineering Lab",2],["ME3471","Manufacturing Tech. Lab II",2]],
+      5: [["ME3591","Design of Machine Elements",4],["ME3551","Metrology & Measurements",3],["ME3592","Heat & Mass Transfer",4],["GE3551","Comprehensive Communication Lab",2],["ME3593","Professional Elective – I",3],["GE3791","Human Values & Ethics",1],["ME3511","Heat Transfer Lab",2],["ME3512","Strength of Materials Lab",2]],
+      6: [["ME3691","CAD/CAM",4],["ME3651","Design of Transmission Systems",3],["ME3692","Professional Elective – II",3],["ME3693","Professional Elective – III",3],["GE3651","Professional Development",2],["ME3661","CAD/CAM Lab",2],["ME3681","Mini Project",2]],
+      7: [["ME3791","Professional Elective – IV",3],["ME3792","Professional Elective – V",3],["MX3084","Innovation & Entrepreneurship",3],["ME3711","Summer Internship",2],["ME3793","Open Elective – I",3],["ME3781","Project Phase – I",2]],
+      8: [["ME3811","Project Work / Internship",10]]
+    }
+  },
+  EEE: {
+    label: "Electrical & Electronics Engineering",
+    semesters: {
+      1: [["HS3151","Professional English – I",3],["MA3151","Matrices & Calculus",4],["PH3151","Engineering Physics",3],["CY3151","Engineering Chemistry",3],["GE3151","Problem Solving & Python Programming",3],["GE3152","Tamils & Technology",1],["GE3171","Problem Solving & Python Lab",2],["BS3171","Physics & Chemistry Lab",2]],
+      2: [["HS3251","Professional English – II",2],["MA3255","Transforms & PDE",4],["PH3202","Physics for Electrical Engg.",3],["GE3251","Engineering Graphics",4],["EE3251","Electrical Circuit Analysis",3],["EE3201","Electromagnetic Theory",3],["GE3271","Engg. Practices Lab",2],["EE3271","Electrical Circuits Lab",2]],
+      3: [["MA3355","Random Processes & LTI Systems",4],["EE3301","Electrical Machines I",3],["EE3302","Digital Logic Circuits",3],["EE3351","Measurements & Instrumentation",3],["EE3303","Electron Devices & Circuits",3],["GE3361","Professional Development",1],["EE3311","Electrical Machines Lab I",2],["EE3312","Electronic Devices Lab",2],["GE3371","Environmental Sciences",2]],
+      4: [["EE3401","Electrical Machines II",4],["EE3402","Power Electronics",3],["EE3403","Linear Integrated Circuits",3],["EE3492","Microprocessor & Microcontroller",4],["EE3404","Transmission & Distribution",3],["GE3451","Engg. Economics & Financial Accounting",3],["EE3411","Electrical Machines Lab II",2],["EE3412","LIC & Microprocessor Lab",2]],
+      5: [["EE3501","Power System Analysis",4],["EE3551","Control & Instrumentation Systems",3],["EE3502","Power System Protection",3],["GE3551","Comprehensive Communication Lab",2],["EE3503","Professional Elective – I",3],["GE3791","Human Values & Ethics",1],["EE3511","Power Electronics Lab",2],["EE3512","Power System Simulation Lab",2]],
+      6: [["EE3601","Solid State Drives",4],["EE3651","Renewable Energy Systems",3],["EE3602","Professional Elective – II",3],["EE3603","Professional Elective – III",3],["GE3651","Professional Development",2],["EE3611","Control Systems Lab",2],["EE3681","Mini Project",2]],
+      7: [["EE3701","Professional Elective – IV",3],["EE3702","Professional Elective – V",3],["MX3084","Innovation & Entrepreneurship",3],["EE3711","Summer Internship",2],["EE3703","Open Elective – I",3],["EE3781","Project Phase – I",2]],
+      8: [["EE3811","Project Work / Internship",10]]
+    }
+  },
+  CIVIL: {
+    label: "Civil Engineering",
+    semesters: {
+      1: [["HS3151","Professional English – I",3],["MA3151","Matrices & Calculus",4],["PH3151","Engineering Physics",3],["CY3151","Engineering Chemistry",3],["GE3151","Problem Solving & Python Programming",3],["GE3152","Tamils & Technology",1],["GE3171","Problem Solving & Python Lab",2],["BS3171","Physics & Chemistry Lab",2]],
+      2: [["HS3251","Professional English – II",2],["MA3251","Statistics & Numerical Methods",4],["PH3256","Applied Physics for Civil Engg.",3],["GE3251","Engineering Graphics",4],["GE3252","Basic Civil & Mechanical Engg.",3],["BE3251","Basic Electrical & Electronics Engg.",3],["GE3271","Engg. Practices Lab",2],["CE3271","Computer-Aided Building Drawing",2]],
+      3: [["MA3351","Transforms & PDE",4],["CE3301","Strength of Materials",3],["CE3302","Surveying",3],["CE3303","Construction Materials & Technology",3],["CE3304","Fluid Mechanics",3],["GE3361","Professional Development",1],["CE3311","Strength of Materials Lab",2],["CE3312","Surveying Practical",2],["GE3371","Environmental Sciences",2]],
+      4: [["CE3401","Concrete Technology",3],["CE3402","Structural Analysis I",4],["CE3403","Soil Mechanics",3],["CE3404","Hydraulics & Hydraulic Machinery",3],["CE3405","Highway Engineering",3],["GE3451","Engg. Economics & Financial Accounting",3],["CE3411","Concrete Lab",2],["CE3412","Soil Mechanics Lab",2]],
+      5: [["CE3501","Design of RC Elements",4],["CE3502","Structural Analysis II",4],["CE3503","Foundation Engineering",3],["GE3551","Comprehensive Communication Lab",2],["CE3504","Professional Elective – I",3],["GE3791","Human Values & Ethics",1],["CE3511","Hydraulics Lab",2],["CE3512","Highway Lab",2]],
+      6: [["CE3601","Design of Steel Structures",4],["CE3602","Estimation & Costing",3],["CE3603","Professional Elective – II",3],["CE3604","Professional Elective – III",3],["GE3651","Professional Development",2],["CE3611","Detailing Drawing Lab",2],["CE3681","Mini Project",2]],
+      7: [["CE3701","Professional Elective – IV",3],["CE3702","Professional Elective – V",3],["MX3084","Innovation & Entrepreneurship",3],["CE3711","Summer Internship",2],["CE3703","Open Elective – I",3],["CE3781","Project Phase – I",2]],
+      8: [["CE3811","Project Work / Internship",10]]
+    }
+  }
+};
+
+/* Branches available for each degree type */
+const DEGREE_BRANCHES = {
+  BE: [
+    {code:"CSE", label:"Computer Science & Engineering", curriculum:"CSE"},
+    {code:"ECE", label:"Electronics & Communication Engineering", curriculum:"ECE"},
+    {code:"MECH", label:"Mechanical Engineering", curriculum:"MECH"},
+    {code:"EEE", label:"Electrical & Electronics Engineering", curriculum:"EEE"},
+    {code:"CIVIL", label:"Civil Engineering", curriculum:"CIVIL"},
+    {code:"OTHER", label:"Other Engineering Branch (custom)", curriculum:null}
+  ],
+  BTECH: [
+    {code:"IT", label:"Information Technology", curriculum:"CSE"},
+    {code:"AIDS", label:"Artificial Intelligence & Data Science", curriculum:"CSE"},
+    {code:"BIOTECH", label:"Biotechnology (custom)", curriculum:null},
+    {code:"OTHER", label:"Other Branch (custom)", curriculum:null}
+  ],
+  BSC: [
+    {code:"CS", label:"B.Sc. Computer Science (custom)", curriculum:null},
+    {code:"MATHS", label:"B.Sc. Mathematics (custom)", curriculum:null},
+    {code:"PHYSICS", label:"B.Sc. Physics (custom)", curriculum:null},
+    {code:"CHEM", label:"B.Sc. Chemistry (custom)", curriculum:null},
+    {code:"OTHER", label:"Other (custom)", curriculum:null}
+  ],
+  BA: [
+    {code:"ENG", label:"B.A. English (custom)", curriculum:null},
+    {code:"ECO", label:"B.A. Economics (custom)", curriculum:null},
+    {code:"OTHER", label:"Other (custom)", curriculum:null}
+  ],
+  BCOM: [
+    {code:"GEN", label:"B.Com. General (custom)", curriculum:null},
+    {code:"CA", label:"B.Com. Computer Applications (custom)", curriculum:null},
+    {code:"OTHER", label:"Other (custom)", curriculum:null}
+  ],
+  BCA: [
+    {code:"BCA", label:"BCA (custom)", curriculum:null}
+  ],
+  CUSTOM: [
+    {code:"CUSTOM", label:"Custom Degree (fully custom)", curriculum:null}
+  ]
+};
+
+/* ============ STUDY RESOURCES ============ */
+const RESOURCES = [
+  {name:"Anna University - Results", url:"https://aucoe.annauniv.edu/", desc:"Official results portal (COE)"},
+  {name:"Anna University - Official Site", url:"https://www.annauniv.edu/", desc:"Circulars, notifications, syllabus"},
+  {name:"Studocu", url:"https://www.studocu.com/", desc:"Shared notes, past papers, study guides"},
+  {name:"Anna University Regulations / Syllabus", url:"https://www.annauniv.edu/academic_courses.html", desc:"Curriculum & regulation documents"}
+];
+
+/* ============ STORAGE HELPERS ============ */
+const DB_KEY = "gradetrack_users_v1";
+const SESSION_KEY = "gradetrack_session_v1";
+
+function loadDB(){
+  try{ return JSON.parse(localStorage.getItem(DB_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+function getSession(){ return localStorage.getItem(SESSION_KEY); }
+function setSession(username){ localStorage.setItem(SESSION_KEY, username); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+
+function defaultUserData(name){
+  return {
+    name: name,
+    degree: "",
+    branch: "",
+    regulation: "R2021",
+    curriculumKey: "",
+    customSubjects: {},      // { sem: [[code,name,credits],...] }
+    marks: {},                // { "sem_code": {marks, grade} }
+    manualCgpa: null
+  };
+}
+
+/* ============ APP STATE ============ */
+let currentUser = null;     // username
+let currentData = null;     // user data object
+let activeSem = 1;
+
+/* ============ AUTH ============ */
+function showSignup(){
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('signup-form').classList.remove('hidden');
+  document.getElementById('login-error').classList.add('hidden');
+}
+function showLogin(){
+  document.getElementById('signup-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
+  document.getElementById('login-error').classList.add('hidden');
+}
+function showAuthError(msg){
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function handleSignup(){
+  const name = document.getElementById('signup-name').value.trim();
+  const username = document.getElementById('signup-username').value.trim().toLowerCase();
+  const password = document.getElementById('signup-password').value;
+
+  if(!name || !username || !password){
+    showAuthError("Please fill in all fields.");
+    return;
+  }
+  const db = loadDB();
+  if(db[username]){
+    showAuthError("That username is already taken. Try logging in instead.");
+    return;
+  }
+  db[username] = {
+    password: password,
+    data: defaultUserData(name)
+  };
+  saveDB(db);
+  setSession(username);
+  startApp(username);
+}
+
+function handleLogin(){
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const db = loadDB();
+  if(!db[username] || db[username].password !== password){
+    showAuthError("Incorrect username or password.");
+    return;
+  }
+  setSession(username);
+  startApp(username);
+}
+
+function logout(){
+  clearSession();
+  currentUser = null;
+  currentData = null;
+  document.getElementById('app-screen').classList.add('hidden');
+  document.getElementById('user-bar').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  showLogin();
+}
+
+function startApp(username){
+  const db = loadDB();
+  currentUser = username;
+  currentData = db[username].data;
+
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  document.getElementById('user-bar').classList.remove('hidden');
+  document.getElementById('welcome-msg').textContent = "Logged in as " + (currentData.name || username);
+
+  renderResources();
+  restoreDegreeSelection();
+}
+
+function persist(){
+  const db = loadDB();
+  db[currentUser].data = currentData;
+  saveDB(db);
+}
+
+/* ============ DEGREE / BRANCH SELECTION ============ */
+function onDegreeChange(){
+  const degree = document.getElementById('degree-select').value;
+  const branchSelect = document.getElementById('branch-select');
+  branchSelect.innerHTML = '<option value="">-- Select branch --</option>';
+
+  if(degree && DEGREE_BRANCHES[degree]){
+    DEGREE_BRANCHES[degree].forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.code;
+      opt.textContent = b.label;
+      opt.dataset.curriculum = b.curriculum || "";
+      branchSelect.appendChild(opt);
+    });
+  }
+
+  currentData.degree = degree;
+  currentData.branch = "";
+  currentData.curriculumKey = "";
+  persist();
+  document.getElementById('marks-card').style.display = 'none';
+  updateDegreeNote();
+}
+
+function onBranchChange(){
+  const branchSelect = document.getElementById('branch-select');
+  const selectedOpt = branchSelect.options[branchSelect.selectedIndex];
+  const branchCode = branchSelect.value;
+  const curriculumKey = selectedOpt ? selectedOpt.dataset.curriculum : "";
+
+  currentData.branch = branchCode;
+  currentData.curriculumKey = (curriculumKey && currentData.regulation !== 'CUSTOM') ? curriculumKey : "";
+  persist();
+
+  if(branchCode){
+    document.getElementById('marks-card').style.display = '';
+    activeSem = 1;
+    renderSemTabs();
+    renderSubjectsTable();
+    renderCgpaSummary();
+    renderPerformanceSummary();
+  } else {
+    document.getElementById('marks-card').style.display = 'none';
+  }
+  updateDegreeNote();
+}
+
+function onRegulationChange(){
+  const reg = document.getElementById('regulation-select').value;
+  currentData.regulation = reg;
+
+  // Re-evaluate curriculum mapping for current branch under new regulation
+  const branchSelect = document.getElementById('branch-select');
+  const selectedOpt = branchSelect.options[branchSelect.selectedIndex];
+  const curriculumKey = selectedOpt ? selectedOpt.dataset.curriculum : "";
+  currentData.curriculumKey = (curriculumKey && reg !== 'CUSTOM') ? curriculumKey : "";
+
+  persist();
+  if(currentData.branch){
+    activeSem = activeSem || 1;
+    renderSemTabs();
+    renderSubjectsTable();
+    renderCgpaSummary();
+    renderPerformanceSummary();
+  }
+  updateDegreeNote();
+}
+
+function updateDegreeNote(){
+  const note = document.getElementById('degree-note');
+  if(currentData.regulation === 'CUSTOM'){
+    note.textContent = "Custom / upcoming regulation selected — add your subjects manually for each semester using the form below, since pre-loaded subject lists are only available for Regulation 2021.";
+  } else if(currentData.curriculumKey && CURRICULA[currentData.curriculumKey]){
+    note.textContent = "Showing the standard Anna University Regulation 2021, 8-semester curriculum for " + CURRICULA[currentData.curriculumKey].label + ". You can still add extra subjects per semester.";
+  } else if(currentData.branch){
+    note.textContent = "No pre-loaded curriculum for this branch — add your subjects manually for each semester using the form below.";
+  } else {
+    note.textContent = "";
+  }
+}
+
+function restoreDegreeSelection(){
+  const degreeSelect = document.getElementById('degree-select');
+  document.getElementById('regulation-select').value = currentData.regulation || 'R2021';
+  degreeSelect.value = currentData.degree || "";
+  if(currentData.degree){
+    onDegreeChange();
+    const branchSelect = document.getElementById('branch-select');
+    branchSelect.value = currentData.branch || "";
+    if(currentData.branch){
+      onBranchChange();
+    }
+  }
+  // Restore manual CGPA field
+  if(currentData.manualCgpa !== null && currentData.manualCgpa !== undefined){
+    document.getElementById('manual-cgpa').value = currentData.manualCgpa;
+  }
+  renderPerformanceSummary();
+}
+
+/* ============ SEMESTER TABS ============ */
+function renderSemTabs(){
+  const wrap = document.getElementById('sem-tabs');
+  wrap.innerHTML = '';
+  for(let s=1; s<=8; s++){
+    const tab = document.createElement('div');
+    tab.className = 'sem-tab' + (s===activeSem ? ' active' : '');
+    tab.textContent = 'Semester ' + s;
+    tab.onclick = () => { activeSem = s; renderSemTabs(); renderSubjectsTable(); };
+    wrap.appendChild(tab);
+  }
+}
+
+/* ============ SUBJECTS TABLE ============ */
+function getSubjectsForSem(sem){
+  let subjects = [];
+  const curKey = currentData.curriculumKey;
+  if(curKey && CURRICULA[curKey] && CURRICULA[curKey].semesters[sem]){
+    subjects = CURRICULA[curKey].semesters[sem].map(s => ({code:s[0], name:s[1], credits:s[2], custom:false}));
+  }
+  const custom = (currentData.customSubjects[sem] || []).map(s => ({code:s[0], name:s[1], credits:s[2], custom:true}));
+  return subjects.concat(custom);
+}
+
+function renderSubjectsTable(){
+  const tbody = document.getElementById('subjects-tbody');
+  tbody.innerHTML = '';
+  const subjects = getSubjectsForSem(activeSem);
+
+  if(subjects.length === 0){
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px;">No subjects yet for this semester. Add some below.</td></tr>';
+  }
+
+  subjects.forEach(sub => {
+    const key = activeSem + "_" + sub.code;
+    const saved = currentData.marks[key] || {marks:'', grade:''};
+    const tr = document.createElement('tr');
+
+    const gradePts = saved.grade && GRADE_POINTS[saved.grade] !== undefined ? GRADE_POINTS[saved.grade] : '—';
+
+    tr.innerHTML = `
+      <td class="mono">${sub.code}</td>
+      <td>${sub.name}</td>
+      <td class="num">${sub.credits}</td>
+      <td class="num"><input type="number" class="marks-input" min="0" max="100" value="${saved.marks}" data-key="${key}" data-field="marks" onchange="updateMark(this)"></td>
+      <td class="num">
+        <select class="grade-select" data-key="${key}" data-field="grade" onchange="updateMark(this)">
+          <option value="">-</option>
+          ${GRADE_OPTIONS.map(g => `<option value="${g}" ${g===saved.grade?'selected':''}>${g}</option>`).join('')}
+        </select>
+      </td>
+      <td class="num">${gradePts}</td>
+      <td class="num">${sub.custom ? `<button class="btn small secondary" onclick="removeCustomSubject(${activeSem}, '${sub.code}')">✕</button>` : ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  renderSemGpa();
+}
+
+function updateMark(el){
+  const key = el.dataset.key;
+  const field = el.dataset.field;
+  if(!currentData.marks[key]) currentData.marks[key] = {marks:'', grade:''};
+  currentData.marks[key][field] = el.value;
+
+  // Auto-derive grade from marks if grade not manually set and marks entered
+  if(field === 'marks' && el.value !== ''){
+    const m = parseFloat(el.value);
+    if(!isNaN(m) && !currentData.marks[key].grade){
+      currentData.marks[key].grade = marksToGrade(m);
+      renderSubjectsTable();
+    }
+  }
+  persist();
+  renderSemGpa();
+  renderCgpaSummary();
+}
+
+function marksToGrade(m){
+  if(m>=91) return "O";
+  if(m>=81) return "A+";
+  if(m>=71) return "A";
+  if(m>=61) return "B+";
+  if(m>=51) return "B";
+  if(m>=50) return "C";
+  return "RA";
+}
+
+/* ============ CUSTOM SUBJECTS ============ */
+function addCustomSubject(){
+  const name = document.getElementById('custom-subname').value.trim();
+  const code = document.getElementById('custom-subcode').value.trim() || ('CUST' + Date.now());
+  const credits = parseInt(document.getElementById('custom-credits').value) || 3;
+
+  if(!name){ alert("Please enter a subject name."); return; }
+
+  if(!currentData.customSubjects[activeSem]) currentData.customSubjects[activeSem] = [];
+  currentData.customSubjects[activeSem].push([code, name, credits]);
+  persist();
+
+  document.getElementById('custom-subname').value = '';
+  document.getElementById('custom-subcode').value = '';
+  document.getElementById('custom-credits').value = '';
+
+  renderSubjectsTable();
+}
+
+function removeCustomSubject(sem, code){
+  if(!currentData.customSubjects[sem]) return;
+  currentData.customSubjects[sem] = currentData.customSubjects[sem].filter(s => s[0] !== code);
+  delete currentData.marks[sem + "_" + code];
+  persist();
+  renderSubjectsTable();
+  renderCgpaSummary();
+}
+
+/* ============ GPA / CGPA CALC ============ */
+function calcSemGpa(sem){
+  const subjects = getSubjectsForSem(sem);
+  let totalCredits = 0, weighted = 0, gradedCredits = 0;
+  subjects.forEach(sub => {
+    const key = sem + "_" + sub.code;
+    const saved = currentData.marks[key];
+    totalCredits += sub.credits;
+    if(saved && saved.grade && GRADE_POINTS[saved.grade] !== undefined){
+      weighted += GRADE_POINTS[saved.grade] * sub.credits;
+      gradedCredits += sub.credits;
+    }
+  });
+  const gpa = gradedCredits > 0 ? (weighted / gradedCredits) : 0;
+  return {gpa, totalCredits, gradedCredits};
+}
+
+function renderSemGpa(){
+  const {gpa, gradedCredits} = calcSemGpa(activeSem);
+  document.getElementById('sem-gpa').textContent = gradedCredits > 0 ? gpa.toFixed(2) : '—';
+  document.getElementById('sem-credits').textContent = gradedCredits + (gradedCredits===1?' credit':' credits') + ' graded';
+}
+
+function renderCgpaSummary(){
+  const tbody = document.getElementById('cgpa-tbody');
+  tbody.innerHTML = '';
+  let totalWeighted = 0, totalCredits = 0, semCount = 0;
+
+  for(let s=1; s<=8; s++){
+    const {gpa, gradedCredits} = calcSemGpa(s);
+    if(gradedCredits > 0){
+      semCount++;
+      totalWeighted += gpa * gradedCredits;
+      totalCredits += gradedCredits;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>Semester ${s}</td><td class="num">${gpa.toFixed(2)}</td><td class="num">${gradedCredits}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  if(semCount === 0){
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);">No grades entered yet</td></tr>';
+  }
+
+  const cgpa = totalCredits > 0 ? (totalWeighted / totalCredits) : 0;
+
+  // If manual CGPA is set and no graded data, prefer manual
+  if(totalCredits === 0 && currentData.manualCgpa){
+    document.getElementById('cgpa-display').textContent = parseFloat(currentData.manualCgpa).toFixed(2);
+  } else {
+    document.getElementById('cgpa-display').textContent = cgpa.toFixed(2);
+  }
+  document.getElementById('cgpa-credits').textContent = "Total credits: " + totalCredits;
+  document.getElementById('cgpa-sems').textContent = "Semesters recorded: " + semCount;
+  renderPerformanceSummary();
+}
+
+function saveManualCgpa(){
+  const val = document.getElementById('manual-cgpa').value;
+  currentData.manualCgpa = val === '' ? null : val;
+  persist();
+  renderCgpaSummary();
+}
+
+/* ============ PERFORMANCE & ARREARS DASHBOARD ============ */
+function renderPerformanceSummary(){
+  const perfGrid = document.getElementById('perf-grid');
+  const semTbody = document.getElementById('perf-sem-tbody');
+  const arrearList = document.getElementById('arrear-list');
+  if(!perfGrid || !semTbody || !arrearList) return;
+
+  perfGrid.innerHTML = '';
+  semTbody.innerHTML = '';
+  arrearList.innerHTML = '';
+
+  if(!currentData.branch){
+    perfGrid.innerHTML = '<p class="note">Select a degree and branch above to see your performance overview.</p>';
+    return;
+  }
+
+  let totalSubjects = 0, totalGraded = 0, totalCredits = 0, totalWeighted = 0;
+  let bestSem = null, bestGpa = -1;
+  const arrears = [];
+  const semRows = [];
+
+  for(let s=1; s<=8; s++){
+    const subjects = getSubjectsForSem(s);
+    if(subjects.length === 0) continue;
+
+    const {gpa, gradedCredits} = calcSemGpa(s);
+    let gradedCount = 0;
+    let semArrearCount = 0;
+
+    subjects.forEach(sub => {
+      const key = s + "_" + sub.code;
+      const saved = currentData.marks[key];
+      if(saved && saved.grade){
+        gradedCount++;
+        totalGraded++;
+        if(saved.grade === 'RA' || saved.grade === 'W'){
+          semArrearCount++;
+          arrears.push({sem:s, code:sub.code, name:sub.name, grade:saved.grade});
+        }
+      }
+      totalSubjects++;
+    });
+
+    if(gradedCredits > 0){
+      totalCredits += gradedCredits;
+      totalWeighted += gpa * gradedCredits;
+      if(gpa > bestGpa){ bestGpa = gpa; bestSem = s; }
+    }
+
+    if(gradedCount > 0){
+      const status = semArrearCount > 0
+        ? `<span class="badge arrear">${semArrearCount} arrear${semArrearCount>1?'s':''}</span>`
+        : `<span class="badge pass">clear</span>`;
+      semRows.push(`<tr><td>Semester ${s}</td><td class="num">${gradedCount}/${subjects.length}</td><td class="num">${gradedCredits>0?gpa.toFixed(2):'—'}</td><td class="num">${gradedCredits}</td><td class="num">${status}</td></tr>`);
+    }
+  }
+
+  const cgpa = totalCredits > 0 ? (totalWeighted/totalCredits) : 0;
+
+  perfGrid.innerHTML = `
+    <div class="perf-stat">
+      <div class="stat-num">${cgpa.toFixed(2)}</div>
+      <div class="stat-lab">CGPA</div>
+    </div>
+    <div class="perf-stat">
+      <div class="stat-num">${totalGraded}/${totalSubjects}</div>
+      <div class="stat-lab">Subjects Graded</div>
+    </div>
+    <div class="perf-stat">
+      <div class="stat-num">${bestSem ? 'Sem ' + bestSem : '—'}</div>
+      <div class="stat-lab">Best Semester${bestGpa>=0 ? ' (' + bestGpa.toFixed(2) + ')' : ''}</div>
+    </div>
+    <div class="perf-stat ${arrears.length>0?'warn':''}">
+      <div class="stat-num">${arrears.length}</div>
+      <div class="stat-lab">Active Arrears</div>
+    </div>
+  `;
+
+  semTbody.innerHTML = semRows.length
+    ? semRows.join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);">No grades entered yet</td></tr>';
+
+  if(arrears.length === 0){
+    arrearList.innerHTML = '<p class="note">No arrears recorded — every graded subject so far has a pass grade (O–C).</p>';
+  } else {
+    arrearList.innerHTML = arrears.map(a => `
+      <div class="arrear-item">
+        <div>
+          <div class="a-sub">${a.name}</div>
+          <div class="a-code">${a.code} · Semester ${a.sem}</div>
+        </div>
+        <span class="badge arrear">${a.grade}</span>
+      </div>
+    `).join('');
+  }
+}
+
+/* ============ RESOURCES ============ */
+function renderResources(){
+  const list = document.getElementById('resource-list');
+  list.innerHTML = '';
+  RESOURCES.forEach(r => {
+    const a = document.createElement('a');
+    a.href = r.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.className = "resource-item";
+    a.innerHTML = `
+      <div>
+        <div class="r-name">${r.name}</div>
+        <div class="r-desc">${r.desc}</div>
+      </div>
+      <div class="r-go">Open →</div>
+    `;
+    list.appendChild(a);
+  });
+}
+
+/* ============ MARKSHEET OCR ============ */
+let ocrParsedRows = []; // [{code,name,credits,grade,marks,selected}]
+let ocrRawText = "";
+
+// Drag & drop support
+window.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('upload-zone');
+  if(!zone) return;
+  ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => {
+    e.preventDefault(); zone.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+  }));
+  zone.addEventListener('drop', e => {
+    const file = e.dataTransfer.files[0];
+    if(file) handleMarksheetFile(file);
+  });
+});
+
+async function handleMarksheetFile(file){
+  if(!file) return;
+  if(!currentData.curriculumKey && !Object.keys(currentData.customSubjects).length){
+    // still allow, just warn matching may be limited
+  }
+
+  const progressWrap = document.getElementById('ocr-progress');
+  const fillEl = document.getElementById('ocr-fill');
+  const statusEl = document.getElementById('ocr-status');
+  progressWrap.classList.add('active');
+  fillEl.style.width = '0%';
+  statusEl.textContent = 'Loading OCR engine…';
+
+  try{
+    const result = await Tesseract.recognize(file, 'eng', {
+      logger: m => {
+        if(m.status){
+          statusEl.textContent = m.status.replace(/_/g,' ') + (m.progress ? ' — ' + Math.round(m.progress*100) + '%' : '');
+        }
+        if(m.progress){
+          fillEl.style.width = Math.round(m.progress*100) + '%';
+        }
+      }
+    });
+    ocrRawText = result.data.text || '';
+    statusEl.textContent = 'Done — parsing results…';
+    fillEl.style.width = '100%';
+
+    ocrParsedRows = parseMarksheetText(ocrRawText);
+    openOcrModal();
+  } catch(err){
+    statusEl.textContent = 'OCR failed: ' + err.message;
+  } finally {
+    setTimeout(() => { progressWrap.classList.remove('active'); }, 1200);
+    document.getElementById('marksheet-file').value = '';
+  }
+}
+
+/* Parse OCR text into candidate subject rows.
+   Looks for lines containing a subject-code-like token (letters+digits, 5-8 chars)
+   and a grade-like token (O, A+, A, B+, B, C, RA, W) or a numeric mark (0-100). */
+function parseMarksheetText(text){
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+  const rows = [];
+
+  const codeRegex = /\b([A-Z]{2}[0-9A-Z]{3,7})\b/;          // e.g. CS3491, GE3151
+  const gradeRegex = /\b(O|A\+|A|B\+|B|C|RA|W)\b/;
+  const marksRegex = /\b([0-9]{1,3})\b/;
+
+  lines.forEach(line => {
+    const upper = line.toUpperCase().replace(/[|]/g, ' ');
+    const codeMatch = upper.match(codeRegex);
+    if(!codeMatch) return; // need a code to anchor the row
+
+    const code = codeMatch[1];
+
+    // grade: search tokens after the code
+    const afterCode = upper.slice(codeMatch.index + code.length);
+    const gradeMatch = afterCode.match(gradeRegex);
+    const grade = gradeMatch ? gradeMatch[1] : '';
+
+    // marks: a 1-3 digit number, ideally 0-100, not part of the code
+    let marks = '';
+    const numMatches = afterCode.match(/\b([0-9]{1,3})\b/g);
+    if(numMatches){
+      for(const n of numMatches){
+        const v = parseInt(n);
+        if(v >= 0 && v <= 100){ marks = String(v); break; }
+      }
+    }
+
+    // subject name: strip code, grade, numbers, leftover punctuation
+    let name = line
+      .replace(code, '')
+      .replace(new RegExp('\\b' + grade + '\\b'), '')
+      .replace(/\b\d{1,3}\b/g, '')
+      .replace(/[^A-Za-z &\-\/]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    if(!name) name = '(subject name not detected — edit manually)';
+
+    // try to find credits from known curricula by code match
+    let credits = guessCreditsForCode(code);
+
+    rows.push({
+      code: code,
+      name: name,
+      credits: credits || 3,
+      grade: grade,
+      marks: marks,
+      selected: true
+    });
+  });
+
+  return rows;
+}
+
+function guessCreditsForCode(code){
+  for(const key in CURRICULA){
+    const sems = CURRICULA[key].semesters;
+    for(const s in sems){
+      const found = sems[s].find(sub => sub[0] === code);
+      if(found) return found[2];
+    }
+  }
+  return null;
+}
+
+/* Guess which semester the scanned subjects belong to, based on curriculum match */
+function guessSemesterForRows(rows){
+  const curKey = currentData.curriculumKey;
+  if(!curKey || !CURRICULA[curKey]) return 1;
+  const sems = CURRICULA[curKey].semesters;
+  let bestSem = 1, bestCount = 0;
+  for(const s in sems){
+    const codes = sems[s].map(sub => sub[0]);
+    const count = rows.filter(r => codes.includes(r.code)).length;
+    if(count > bestCount){ bestCount = count; bestSem = parseInt(s); }
+  }
+  return bestSem;
+}
+
+function openOcrModal(){
+  const modal = document.getElementById('ocr-modal');
+  const guessedSem = guessSemesterForRows(ocrParsedRows);
+  document.getElementById('ocr-sem-select').value = guessedSem;
+  document.getElementById('ocr-raw-text').textContent = ocrRawText;
+  document.getElementById('ocr-raw-text').style.display = 'none';
+  modal.classList.remove('hidden');
+  renderOcrReviewTable();
+}
+
+function closeOcrModal(){
+  document.getElementById('ocr-modal').classList.add('hidden');
+}
+
+function toggleRawText(){
+  const el = document.getElementById('ocr-raw-text');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderOcrReviewTable(){
+  const sem = document.getElementById('ocr-sem-select').value;
+  document.getElementById('ocr-target-sem-label').textContent = 'Semester ' + sem;
+
+  const tbody = document.getElementById('ocr-review-tbody');
+  tbody.innerHTML = '';
+
+  if(ocrParsedRows.length === 0){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">No subject rows detected. Try a clearer photo, or use "Show raw OCR text" to see what was read.</td></tr>';
+    return;
+  }
+
+  ocrParsedRows.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="checkbox" ${row.selected ? 'checked' : ''} onchange="ocrParsedRows[${idx}].selected = this.checked"></td>
+      <td><input type="text" value="${row.code}" onchange="ocrParsedRows[${idx}].code = this.value.toUpperCase()"></td>
+      <td><input type="text" value="${row.name}" onchange="ocrParsedRows[${idx}].name = this.value"></td>
+      <td class="num"><input type="number" min="1" max="10" value="${row.credits}" onchange="ocrParsedRows[${idx}].credits = parseInt(this.value)||3"></td>
+      <td class="num">
+        <select onchange="ocrParsedRows[${idx}].grade = this.value">
+          <option value="">-</option>
+          ${GRADE_OPTIONS.map(g => `<option value="${g}" ${g===row.grade?'selected':''}>${g}</option>`).join('')}
+        </select>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function applyOcrResults(){
+  const sem = parseInt(document.getElementById('ocr-sem-select').value);
+  const selected = ocrParsedRows.filter(r => r.selected && r.code);
+
+  selected.forEach(row => {
+    // If this code isn't in the curriculum or custom list for this sem, add as custom
+    const existing = getSubjectsForSem(sem).find(s => s.code === row.code);
+    if(!existing){
+      if(!currentData.customSubjects[sem]) currentData.customSubjects[sem] = [];
+      currentData.customSubjects[sem].push([row.code, row.name, row.credits]);
+    }
+    const key = sem + "_" + row.code;
+    if(!currentData.marks[key]) currentData.marks[key] = {marks:'', grade:''};
+    if(row.grade) currentData.marks[key].grade = row.grade;
+    if(row.marks) currentData.marks[key].marks = row.marks;
+  });
+
+  persist();
+  closeOcrModal();
+
+  // Jump to that semester and refresh
+  activeSem = sem;
+  if(currentData.branch){
+    renderSemTabs();
+    renderSubjectsTable();
+    renderCgpaSummary();
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const session = getSession();
+  if(session){
+    const db = loadDB();
+    if(db[session]){
+      startApp(session);
+    } else {
+      clearSession();
+    }
+  }
+});
+</script>
+
+</body>
+</html>
